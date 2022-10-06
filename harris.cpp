@@ -52,13 +52,13 @@ void mouse_callback(int event, int x, int y, int flags, void* unused)
 if (event == EVENT_LBUTTONDOWN)
   {
 	cout << "Vous avez cliqué sur le point (" << x << ", " << y << ")\n";
-    cout << "Harris : " << harris(Dx, Dy, x, y, 1, H) << endl;
-    cout << H << endl;
+    cout << "Score Harris : " << harris(Dx, Dy, x, y, 1, H) << endl;
+    cout << "Matrice H : " << H << endl;
     Mat vp;
     Mat VectVp;
     eigen(H, vp, VectVp);
-    //cout << "Valeur propres : " << vp << endl;
-    cout << VectVp << endl;
+    cout << "Valeur propres : " << vp << endl;
+    cout << "Vecteur propres : " << VectVp << endl;
 	// A vous de compléter
   }
 }
@@ -120,16 +120,16 @@ int main( int argc, char** argv )
     Mat ky;
     Mat kybis;
     // Dx
-    getDoGX(kx, 2, 1);
+    getDoGX(kx, 2, 1*2);
     filter2D(tmp, Dx, CV_64FC1, kx);
-    //normalize(Dx, Dx, 255, 0, NORM_MINMAX, CV_8UC1);
+    //normalize(Dx, Dx, 128, 0, NORM_MINMAX, CV_8UC1);
     namedWindow("Dx");
     imshow("Dx", Dx);
 
     // Dy
     rotate(kx, ky, ROTATE_90_COUNTERCLOCKWISE);
     filter2D(tmp, Dy, CV_64FC1, ky);
-    //normalize(Dy, Dy, 255, 0, NORM_MINMAX, CV_8UC1);
+    //normalize(Dy, Dy, 128, 0, NORM_MINMAX, CV_8UC1);
     namedWindow("Dy");
     imshow("Dy", Dy);
 
@@ -157,5 +157,56 @@ int main( int argc, char** argv )
   waitKey();
   return 0;
 }
+
+/*
+
+PARTIE QUESTION :
+
+3.2) Tests
+
+3.2.1 Sensibilité à la forme)
+Pour un angle saillant :
+    Score Harris : -43454
+    Matrice H : [48.63722206936674, -133.6650217120597;
+                -133.6650217120597, 434.7505612385874]
+Pour un angle Obtu :
+    Score Harris : -620937
+    Matrice H : [1776.03337188693, 130.542350236563;
+                130.542350236563, 25.42369369518756]
+Ligne droite :
+    Score Harris : 0
+    Matrice H : [0, 0;
+                0, 0]
+    Valeur propres : [0;
+                        0]
+    Vecteur propres : [1, 0;
+                        0, 1]
+    Oui le score harris est de 0 donc null, il est bien dans la bonne direction, le score reste de zéro. Cependant il diminue lorsque l'on se rapproche d'un angle.
+
+Les angles droits du carré :
+Les valeurs Harris sont très basses :
+Score Harris : -620937
+    Matrice H : [1776.03337188693, 130.5423502365639;
+                130.5423502365639, 25.42369369518769]
+    Valeur propres : [1785.714332987839;
+                        15.74273259427907]
+    Vecteur propres : [0.9972614715773149, 0.07395645548191408;
+                        -0.07395645548191408, 0.9972614715773149]
+Le score n'est pas pareil d'un coin à un autre, car ce n'est pas la même direction.
+
+3.2.2 Sensibilité au contraste)
+
+Cela ne change rien car les points de Harris ne sont pas sensibles aux changemements de niveau de gris.
+
+3.2.3 Sensibilité à σ)
+
+Les scores de Harris sont globalement diminués. Ce n'est donc pas stable, cela senble creser les écarts
+
+4 Détecteur de Harris-Laplace)
+
+Le programme ne fonctionne pas....
+
+
+*/
 
 

@@ -1,0 +1,100 @@
+#include "opencv2/highgui.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/xfeatures2d.hpp"
+#include <iostream>
+
+using namespace cv;
+using namespace std;
+
+Mat src, gradX, gradY, Dx, Dy, H;
+double x, y;
+
+double harris(Mat& Gx, Mat& Gy, int x, int y, int w, Mat& H)
+{
+// Point d'intéret = x,y
+    // On prend la somme Dx + Dy
+    // Ensuite on initialise H en fonction de 2w+1 (2*2)
+    // Prendre le point centrale de la matrice Dx Dy (width /2 +  length / 2)
+    // On remplis la matrice H par rapport à la largeur 2w+1 en évitant
+    Mat result;
+    H = Mat(2, 2, CV_64FC1);
+    //if (x - H.rows / 2 < 0 || x + H.rows / 2 || y - )
+    add(Gx, Gy, result);
+    // On ajoute un padding
+    copyMakeBorder(result, result, 2*w+1, 2*w+1, 2*w+1, 2*w+1, BORDER_CONSTANT, 0);
+
+    double xy = 0;
+    double X = 0;
+    double Y = 0;
+    for (int i = -w; i <= w; ++i) {
+        for (int j = -w; j <= w; ++j) {
+            xy +=  Gx.at<double>(y+j, x+i) * Gy.at<double>(y+j, x+i);
+            X += pow(Gx.at<double>(y+j, x+i), 2); // Gx = Ix
+            Y += pow(Gy.at<double>( y+j, x+i), 2); // Gy = Iy
+            //H.at<double>(x+i, x+j+1) = Gx.at<double>(x, y) * Gy.at<double>(x, y);
+            //H.at<double>(x+i+1, x+j) = Gx.at<double>(x, y) * Gy.at<double>(x, y);
+        }
+    }
+
+    // Valeur propre = eigen
+    // Produit des valaurs propres -
+
+    H.at<double>(0, 0) = X;
+    H.at<double>(0, 1) = xy;
+    H.at<double>(1, 0) = xy;
+    H.at<double>(1, 1) = Y;
+    double k = 0.2;
+    return determinant(H) - k * pow(trace(H)[0], 2);  // doit en fait retourner det(H)-0.15 tr^2(H)
+
+}
+
+
+void mouse_callback(int event, int x, int y, int flags, void* unused)
+{
+if (event == EVENT_LBUTTONDOWN)
+  {
+	cout << "Vous avez cliqué sur le point (" << x << ", " << y << ")\n";
+
+	// A vous de compléter	
+  }
+}
+
+
+
+
+
+int main( int argc, char** argv )
+{
+  Mat tmp = imread(argv[1]);
+  Mat kx;
+
+  if (tmp.channels() > 1)
+    {
+      cvtColor( tmp, src, COLOR_BGR2GRAY );
+      tmp= src;
+    }
+  // tmp.convertTo(src, CV_8UC1 );
+  tmp.convertTo(src, CV_8UC1);
+  // attention, autre conversion en CV_32FC1 probablement nécessaire...
+
+
+  // Routine de traitement du clic souris
+  setMouseCallback("src", mouse_callback, NULL);
+
+  // Détecteur de Harris-Laplace
+  Ptr<xfeatures2d::HarrisLaplaceFeatureDetector> p= xfeatures2d::HarrisLaplaceFeatureDetector::create();
+  vector<KeyPoint> kpts;
+  
+  p->detect(src, kpts);
+
+  Mat res;
+  drawKeypoints(src, kpts, res);
+
+  namedWindow("res");
+  imshow("res", res);
+
+  waitKey();
+  return 0;
+}
+
+
