@@ -27,9 +27,9 @@ double harris(Mat& Gx, Mat& Gy, int x, int y, int w, Mat& H)
     double Y = 0;
     for (int i = -w; i <= w; ++i) {
         for (int j = -w; j <= w; ++j) {
-            xy +=  Gx.at<double>(x+i, y+j) * Gy.at<double>(x+i, y+j);
-            X += H.at<double>(x+i, x+j) = pow(Gx.at<double>(x, y), 2);
-            Y += H.at<double>(x+i+1, x+j+1) = pow(Gy.at<double>(x, y), 2);
+            xy +=  Gx.at<double>(y+j, x+i) * Gy.at<double>(y+j, x+i);
+            X += pow(Gx.at<double>(y+j, x+i), 2); // Gx = Ix
+            Y += pow(Gy.at<double>( y+j, x+i), 2); // Gy = Iy
             //H.at<double>(x+i, x+j+1) = Gx.at<double>(x, y) * Gy.at<double>(x, y);
             //H.at<double>(x+i+1, x+j) = Gx.at<double>(x, y) * Gy.at<double>(x, y);
         }
@@ -42,8 +42,8 @@ double harris(Mat& Gx, Mat& Gy, int x, int y, int w, Mat& H)
     H.at<double>(0, 1) = xy;
     H.at<double>(1, 0) = xy;
     H.at<double>(1, 1) = Y;
-
-  return determinant(H) - 0.15 * pow(trace(H)[0], 2);  // doit en fait retourner det(H)-0.15 tr^2(H)
+    double k = 0.2;
+  return determinant(H) - k * pow(trace(H)[0], 2);  // doit en fait retourner det(H)-0.15 tr^2(H)
 }
 
 
@@ -57,7 +57,7 @@ if (event == EVENT_LBUTTONDOWN)
     Mat vp;
     Mat VectVp;
     eigen(H, vp, VectVp);
-    cout << "Valeur propres : " << vp << endl;
+    //cout << "Valeur propres : " << vp << endl;
     cout << VectVp << endl;
 	// A vous de compléter
   }
